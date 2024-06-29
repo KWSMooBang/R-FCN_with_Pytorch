@@ -76,6 +76,15 @@ def inverse_transform_bbox(anchors, targets):
 
     return bboxes
 
+def clip_bbox(bboxes, image_shape, batch_size):
+    for i in range(batch_size):
+        bboxes[i, :, 0::4].clamp_(0, image_shape[i, 1]-1)
+        bboxes[i, :, 1::4].clamp_(0, image_shape[i, 0]-1)
+        bboxes[i, :, 2::4].clamp_(0, image_shape[i, 1]-1)
+        bboxes[i, :, 3::4].clamp_(0, image_shape[i, 0]-1)
+        
+    return bboxes
+
 def iou_bbox(anchors, gt_bboxes):
     """
     calculate iou between anchors and ground truth bboxes
