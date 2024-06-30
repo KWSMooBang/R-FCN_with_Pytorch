@@ -1,0 +1,43 @@
+import os 
+import numpy as np
+
+from easydict import EasyDict as edict
+
+cfg = edict()
+
+# training options 
+cfg.TRAIN = edict()
+
+cfg.TRAIN.LEARNING_RATE = 0.001
+cfg.TRAIN.MOMENTUM = 0.9
+cfg.TRAIN.WEIGHT_DECAY = 0.0005
+cfg.TRAIN.GAMMA = 0.1
+cfg.TRAIN.STEPSIZE = [30000]
+cfg.TRAIN.OHEM = False
+
+cfg.TRAIN.MAX_SIZE = 1000
+cfg.TRAIN.TRIM_HEIGHT = 600 
+cfg.TRAIN.TRIM_WIDTH = 600
+
+cfg.TRAIN.IMAGES_PER_BATCH = 1
+cfg.TRAIN.BATCH_SIZE = 128
+
+cfg.TRAIN.POS_RATIO = 0.25
+cfg.TRAIN.POS_THRESH = 0.5
+cfg.TRAIN.NEG_THRESH_H = 0.5
+cfg.TRAIN.NEG_THRESH_L = 0.1
+
+cfg.TRAIN.USE_FLIPPED = True
+
+cfg.TRAIN.BBOX_REG = True
+
+cfg.TRAIN.BBOX_THRESH = 0.5
+
+cfg.TRAIN.RPN_POSITIVE_IOU = 0.7
+cfg.TRAIN.RPN_NEGATIVE_IOU = 0.3
+cfg.TRAIN.RPN_POS_RATIO = 0.5
+cfg.TRAIN.RPN_BATCHSIZE = 256
+cfg.TRAIN.PRN_NMS_THRESH = 0.7
+cfg.TRAIN.PRN_PRE_NMS_TOP_N = 12000
+cfg.TRAIN.RPN_POST_NMS_TOP_N = 2000
+cfg.TRAIN.RPN_MIN_SIZE = 8
