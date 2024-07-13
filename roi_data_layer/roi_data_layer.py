@@ -6,7 +6,7 @@ import datasets
 from PIL import Image
 from datasets.CustomVOCDetection import CustomVOCDetection
 
-def preparse_roidb(dataset: CustomVOCDetection):
+def prepare_roidb(dataset: CustomVOCDetection):
     roidb = dataset.roidb
     sizes = [Image.open(dataset.images[i]).size
              for i in range(dataset.num_images)]
@@ -76,7 +76,7 @@ def combined_roidb(dataset: CustomVOCDetection, training=True, isFlip=False):
             print("Done")
         
         print("Preparing training data...")
-        preparse_roidb(dataset)
+        prepare_roidb(dataset)
         print("Done")
         
         return dataset.roidb
