@@ -13,7 +13,7 @@ class ProposalLayer(nn.Module):
     transformations to a set of regular boxes 
     """
 
-    def __init__(self, feat_stride, scales, ratios,):
+    def __init__(self, scales, ratios, feat_stride):
         super(ProposalLayer, self).__init__()
 
         self.train_pre_nms_n = 12000
@@ -28,7 +28,7 @@ class ProposalLayer(nn.Module):
 
         self.feat_stride = feat_stride
         self.anchors = torch.from_numpy(generate_anchors(scales=np.array(scales),
-                                    ratios=np.array(ratios))).float()
+                                                         ratios=np.array(ratios))).float()
         self.num_anchors = self.anchors.size(0)
 
 

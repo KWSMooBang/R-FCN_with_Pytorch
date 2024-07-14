@@ -90,29 +90,43 @@ def iou_bbox(anchors, gt_bboxes):
     calculate iou between anchors and ground truth bboxes
     Args:
         anchors: (N, 4)
-        gt_bboxes: (K, 4)
+        gt_bboxes: (batch_size, K, 4)
 
         overlaps: (N, K)
     """
+    batch_size = gt_bboxes.size(0)
+
     N = anchors.size(0)
-    K = gt_bboxes.size(0)
+    K = gt_bboxes.size(1)
 
-    gt_bboxes_area = ((gt_bboxes[:, 2] - gt_bboxes[:, 0] + 1) * (gt_bboxes[:, 3] - gt_bboxes[:, 1] + 1)).view(1, K)
-    anchors_area = ((anchors[:, 2] - anchors[:, 0] + 1) * (anchors[:, 3] - anchors[:, 1] + 1)).view(N, 1)
-    
-    anchors_expanded = anchors.view(N, 1, 4).expand(N, K, 4)
-    gt_bboxes_expanded = gt_bboxes.view(1, K, 4).expand(N, K, 4)
+    anchors = anchors.view(1, N, 4).expand(batch_size, N, 4).contiguous()
+    gt_bboxes = gt_bboxes[:, :, :4].contiguous()
 
-    intersects_w = (torch.min(anchors_expanded[:, :, 2], gt_bboxes_expanded[:, :, 2]) - 
-                torch.max(anchors_expanded[:, :, 0], anchors_expanded[:, :, 0]) + 1)
-    intersects_h = (torch.min(anchors_expanded[:, :, 3], gt_bboxes_expanded[:, :, 2]) -
-                torch.max(anchors_expanded[:, :, 0], anchors_expanded[:, :, 0]) + 1)
+    gt_bboxes_x = (gt_bboxes[:, :, 2] - gt_bboxes[:, :, 0] + 1)
+    gt_bboxes_y = (gt_bboxes[:, :, 3] - gt_bbpxes[:, :, 1] + 1)
+    gt_bboxes_area = (gt_bboxes_x * gt_bboxes_y).view(batch_size, 1, K)
+
+    anchors_x = (anchors[:, :, 2] - anchors[:, :, 0] + 1)
+    anchors_y = (anchors[:, :, 3] - anchors[:, :, 1] + 1)
+    anchors_area = (anchors_x * anchors_y).view(batch_size, N, 1)
+
+    gt_area_zero = (gt_bboxes_x == 1) & (gt_bboxes_y == 1)
+    anchors_area_zero = (anchors_x == 1) & (anchors_y == 1)
+
+    boxes = anchors.view(batch_size, N, 1, 4).expand(batch_size, N, K, 4)
+    query_boxes = gt_bboxes.view(batch_size, 1, K, 4).expand(batch_size, N, K, 4)
+
+    intersects_w = (torch.min(boxes[:, :, :, 2], query_boxes[:, :, :, 2]) - 
+                torch.max(boxes[:, :, :, 0], query_boxes[:, :, :, 0]) + 1)
+    intersects_h = (torch.min(boxes[:, :, :, 3], query_boxes[:, :, :, 2]) -
+                torch.max(boxes[:, :, :, 1], query_boxes[:, :, :, 1]) + 1)
     intersects_w[intersects_w < 0] = 0
     intersects_h[intersects_h < 0] = 0
 
     unions_area = anchors_area + gt_bboxes_area - (intersects_w * intersects_h)
     ious = (intersects_w * intersects_h) / unions_area
+
+    ious.masked_fill_(gt_area_zero.view(batch_size, 1, K).expand(batch_size, N, K), 0)
+    ious.masked_fill_(anchors_area_zero.view(batch_size, N, 1).expand(batch_size, N, K), 0)
     
     return ious
-
-
